@@ -32,36 +32,7 @@ jobs:
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
-    - name: Run Bestfix script to generate report
-      shell: bash
-      if: github.event_name == 'pull_request'
-      run: |
-        git clone https://github.com/gzttech/beautifulspoon.git
-        pip3 install beautifulspoon
-        git clone https://github.com/ShiftLeftSecurity/field-integrations.git 
-        pip3 install -r field-integrations/shiftleft-utils/requirements.txt          
-        python3 field-integrations/shiftleft-utils/bestfix.py -a ${{ github.event.repository.name }} -o $GITHUB_WORKSPACE/ngsast-bestfix-report.html
-        bspoon $GITHUB_WORKSPACE/ngsast-bestfix-report.html --select body > $GITHUB_WORKSPACE/qwiet.html
-
-        # Install pandoc
-        sudo apt-get update
-        sudo apt-get install -y pandoc
-
-        # Convert HTML to plain text using pandoc
-        pandoc $GITHUB_WORKSPACE/ngsast-bestfix-report.html -t plain -o bestfix_output.txt
-
-        BESTFIX_OUTPUT=$(cat bestfix_output.txt)
-        BESTFIX_BODY=$(jq -n --rawfile body bestfix_output.txt '{body: $body}')
-        echo "${BESTFIX_BODY}" > bestfix_body.json
-
-        url="https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/${{github.event.number}}/comments"
-
-        curl -s -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GH_API_TOKEN}" -d @bestfix_body.json "${url}"
-
-      env:
-        GH_API_TOKEN: ${{ secrets.API_TOKEN }}
-        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-
+ 
   Build-Rules:
     runs-on: ubuntu-latest
     permissions: write-all
