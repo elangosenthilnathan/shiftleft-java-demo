@@ -3,9 +3,7 @@
 # Visit https://docs.shiftleft.io for help
 name: qwiet.ai
 
-on:
-  pull_request:
-  workflow_dispatch:
+
 
 jobs:
   NextGen-Static-Analysis:
