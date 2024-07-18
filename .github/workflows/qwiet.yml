@@ -5,7 +5,7 @@ name: qwiet.ai
 on:
   pull_request:
   workflow_dispatch:
-  push:
+
 
 jobs:
   NextGen-Static-Analysis:
@@ -25,7 +25,7 @@ jobs:
       run: |
         ${GITHUB_WORKSPACE}/sl --version
         ${GITHUB_WORKSPACE}/sl analyze --strict --wait \
-          --app LaBrea \
+          --app ${{ github.event.repository.name }} \
           --tag branch=${{ github.head_ref }} \
           --oss-project-dir . \
           --javasrc .
@@ -44,11 +44,14 @@ jobs:
          curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
     - name: Validate Build Rules
       run: |
-         ${GITHUB_WORKSPACE}/sl check-analysis --app LaBrea \
-             --github-pr-number=${{github.event.number}} \
-             --github-pr-user=${{ github.repository_owner }} \
-             --github-pr-repo=${{ github.event.repository.name }} \
-             --github-token=${{ secrets.GITHUB_TOKEN }}
+          ${GITHUB_WORKSPACE}/sl check-analysis --v2 --app ${{ github.event.repository.name }} \
+              --source tag.branch=${{ github.base_ref }} \
+              --target tag.branch="${{ github.head_ref || steps.extract_branch.outputs.branch }}" \
+              --report \
+              --github-pr-number=${{ github.event.number }} \
+              --github-pr-user=${{ github.repository_owner }} \
+              --github-pr-repo=${{ github.event.repository.name }} \
+              --github-token=${{ secrets.GITHUB_TOKEN }}
       env:
          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
          SHIFTLEFT_API_HOST: www.shiftleft.io
