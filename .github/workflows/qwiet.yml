@@ -30,7 +30,7 @@ jobs:
         ${GITHUB_WORKSPACE}/sl --version
         ${GITHUB_WORKSPACE}/sl analyze --strict --verbose --wait \
           --app test-checkanalysis \
-          --tag branch=${BRANCH_NAME}} \
+          --tag branch=${BRANCH_NAME} \
           --oss-project-dir . \
           --javasrc .
       env:
