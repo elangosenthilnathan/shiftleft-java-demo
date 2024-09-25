@@ -28,7 +28,7 @@ jobs:
     - name: preZero Static Analysis
       run: |
         ${GITHUB_WORKSPACE}/sl analyze --verbose --wait \
-          --app manualPRautofixjava1 \
+          --app manualPRautofixjava2 \
           --javasrc .
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
