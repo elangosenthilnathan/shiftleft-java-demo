@@ -265,6 +265,9 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
     httpResponse.getOutputStream().println("Settings Saved");
 }
 
+    httpResponse.getOutputStream().println("Settings Saved");
+}
+
 
   /**
    * Debug test for saving and reading a customer
@@ -391,4 +394,5 @@ public void saveSettings(HttpServletResponse httpResponse, WebRequest request) t
 	}
 
 }
+
 
