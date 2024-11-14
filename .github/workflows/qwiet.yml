@@ -8,27 +8,19 @@ on:
       - 'master'
       - 'main'
 
-env:
- BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   NextGen-Static-Analysis:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
+    container: shiftleft/core:latest
     
-    # - name: Package with maven
-    #   run: mvn clean install
-   
-    - name: Download ShiftLeft CLI
-      run: |
-        curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
-
-    - name: preZero Static Analysis
-      run: |
-        ${GITHUB_WORKSPACE}/sl analyze --verbose --wait \
-          --app manualPRautofixjava4 \
-          --javasrc .
-      env:
-        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        
+  
+      - name: preZero Static Analysis
+        run: |
+          curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
+          ${GITHUB_WORKSPACE}/sl analyze --verbose --wait --app jssrc2cpgtest .
+        env:
+          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
