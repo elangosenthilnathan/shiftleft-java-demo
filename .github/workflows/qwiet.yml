@@ -11,7 +11,7 @@ on:
 
 jobs:
   NextGen-Static-Analysis:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     #container: shiftleft/core:latest
     
     steps:
@@ -26,8 +26,11 @@ jobs:
           
       - name: preZero Static Analysis
         run: |
-          Invoke-WebRequest -Uri https://cdn.shiftleft.io/download/sl-latest-windows-x64.zip -UseBasicParsing -OutFile sl-latest-windows-x64.zip
-          Expand-Archive -Path sl-latest-windows-x64.zip -DestinationPath .
-          .\sl.exe analyze --verbose --app testingexcludeonwindows . -- --exclude "BZ1152513,keys"
+          # Invoke-WebRequest -Uri https://cdn.shiftleft.io/download/sl-latest-windows-x64.zip -UseBasicParsing -OutFile sl-latest-windows-x64.zip
+          # Expand-Archive -Path sl-latest-windows-x64.zip -DestinationPath .
+          echo ${GITHUB_REPOSITORY#*/}
+          echo "============="
+          echo ${{ github.event.repository.name }}
+          #.\sl.exe analyze --verbose --app testingexcludeonwindows . -- --exclude "BZ1152513,keys"
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
