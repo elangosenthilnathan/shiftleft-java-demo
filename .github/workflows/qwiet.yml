@@ -20,7 +20,7 @@ jobs:
       - name: preZero Static Analysis
         run: |
           curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
-          ${GITHUB_WORKSPACE}/sl analyze --verbose --wait --app ${{ github.repository }} .
+          ${GITHUB_WORKSPACE}/sl analyze --verbose --wait --app $GITHUB_REPOSITORY_OWNER_${{ github.event.repository.name }} .
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
           
