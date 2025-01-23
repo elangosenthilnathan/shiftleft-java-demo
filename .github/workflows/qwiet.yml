@@ -31,6 +31,12 @@ jobs:
           echo ${GITHUB_REPOSITORY#*/}
           echo "============="
           echo ${{ github.event.repository.name }}
+          echo "=========="
+          echo "${{ github.repository }}"
+          echo "============="
+          echo "${{ env.REPO_NAME }}"
+          echo "============="
+          echo "$GITHUB_REPOSITORY_OWNER"
           #.\sl.exe analyze --verbose --app testingexcludeonwindows . -- --exclude "BZ1152513,keys"
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
