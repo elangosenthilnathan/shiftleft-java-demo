@@ -6,17 +6,18 @@ name: qwiet.ai
 on:
   pull_request:
   workflow_dispatch:
+  push:
 
 jobs:
   NextGen-Static-Analysis:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Setup Java JDK v11.0.x
-      uses: actions/setup-java@v3
-      with:
-        distribution: zulu
-        java-version: 11.0.x
+    # - name: Setup Java JDK v11.0.x
+    #   uses: actions/setup-java@v3
+    #   with:
+    #     distribution: zulu
+    #     java-version: 11.0.x
 
     - name: Download ShiftLeft CLI
       run: |
@@ -24,6 +25,7 @@ jobs:
 
     - name: preZero Static Analysis
       run: |
+        apt install zulu11-jdk
         ${GITHUB_WORKSPACE}/sl --version
         ${GITHUB_WORKSPACE}/sl analyze --strict --wait \
           --app shiftleft-java-demo \
