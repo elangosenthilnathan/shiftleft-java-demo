@@ -19,13 +19,16 @@ jobs:
     #     distribution: zulu
     #     java-version: 11.0.x
 
+    - name: Install Java
+      run: |
+        apt install zulu11-jdk -y    
+
     - name: Download ShiftLeft CLI
       run: |
         curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
 
     - name: preZero Static Analysis
       run: |
-        apt install zulu11-jdk
         ${GITHUB_WORKSPACE}/sl --version
         ${GITHUB_WORKSPACE}/sl analyze --strict --wait \
           --app shiftleft-java-demo \
