@@ -16,15 +16,15 @@ jobs:
         
       - name: preZero Static Analysis1
         run: |
-          curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
-          sl analyze --verbose --wait --app "${GITHUB_REPOSITORY#*/}" .
+          curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl 
+          ${GITHUB_WORKSPACE}/sl analyze --verbose --wait --app "${GITHUB_REPOSITORY#*/}" .
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: Publish PR Comment
         if: github.event_name == 'pull_request'
         run: |
-            sl check-analysis --v2 --app "${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
+            ${GITHUB_WORKSPACE}/sl check-analysis --v2 --app "${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
             REPORT_OUTPUT=$(cat checkanalysis-report.md)
             REPORT_BODY=$(jq -n --arg body "$REPORT_OUTPUT" '{body: $body}')        
             url="https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/${{github.event.number}}/comments"
