@@ -3,6 +3,7 @@ name: qwiet.ai
 on:
   pull_request:
   workflow_dispatch:
+  push:
 
 
 jobs:
@@ -19,6 +20,23 @@ jobs:
           ${GITHUB_WORKSPACE}/sl analyze --verbose --wait --app "${GITHUB_REPOSITORY_OWNER}_${GITHUB_REPOSITORY#*/}" .
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+
+      - name: Publish PR Comment
+        if: github.event_name == 'pull_request'
+        run: |
+          ${GITHUB_WORKSPACE}/sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}_${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file $GITHUB_WORKSPACE/checkanalysis-report.md
+            REPORT_OUTPUT=$(cat $$GITHUB_WORKSPACE/checkanalysis-report.md)
+            REPORT_BODY=$(jq -n --arg body "$REPORT_OUTPUT" '{body: $body}')        
+            url="https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/${{github.event.number}}/comments"
+  
+            curl -s -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_API_TOKEN}" \
+              -d "${REPORT_BODY}" \
+              "${url}"           
+        env:
+          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
           
       # - name: preZero Static Analysis
       #   run: |
