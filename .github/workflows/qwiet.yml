@@ -3,7 +3,7 @@ name: qwiet.ai
 on:
   pull_request:
   workflow_dispatch:
-  push:
+
 
 
 jobs:
