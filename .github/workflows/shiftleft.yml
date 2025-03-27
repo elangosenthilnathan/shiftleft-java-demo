@@ -18,7 +18,7 @@ jobs:
         distribution: zulu
         java-version: 11.0.x
 
-    - name: Download ShiftLeft CLI
+    - name: Download ShiftLeft CLI 1
       run: |
         curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
 
