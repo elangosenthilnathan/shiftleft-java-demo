@@ -23,7 +23,7 @@ jobs:
         verbose: false
         strict: true
         wait: false
-        importGitHub: true
+        importGitHub: false
 
     - name: Check OS and Install Relevant Qwiet Binary
       shell: bash
@@ -47,14 +47,9 @@ jobs:
           REPORT_OUTPUT=$(cat checkanalysis-report.md)
           REPORT_BODY=$(jq -n --arg body "$REPORT_OUTPUT" '{body: $body}')  
           echo "$REPORT_BODY" >> ghcomment.json
-
+          cat ghcomment.json
           python3 ghComment.py --github_org "${GITHUB_REPOSITORY_OWNER}" --github_repo "${GITHUB_REPOSITORY#*/}" --github_pat ${GH_API_TOKEN} --github_pr_number 9 --filename  ghcomment.json
-          #url="https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/${{github.event.number}}/comments"
-          # curl -s -X POST \
-          #   -H "Accept: application/vnd.github+json" \
-          #   -H "Authorization: Bearer ${GH_API_TOKEN}" \
-          #   -d "${REPORT_BODY}" \
-          #   "${url}"           
+      
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
         GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
