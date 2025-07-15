@@ -144,7 +144,8 @@ def main():
         return
 
     found_comment_id = None
-    search_string = "Checking analysis of application"
+    #search_string = "Checking analysis of application"
+    search_string = "Elango"
 
     # 3. Look for "Checking analysis of application" in element "body"
     for comment in comments:
