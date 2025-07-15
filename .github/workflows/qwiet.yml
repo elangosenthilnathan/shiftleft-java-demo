@@ -16,14 +16,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Qwiet-AllInOne-Scan
-      uses: elangosenthilnathan/Qwiet-preZero@v0.0.1
-      with:
-        shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        verbose: false
-        strict: true
-        wait: false
-        importGitHub: false
+    # - name: Qwiet-AllInOne-Scan
+    #   uses: elangosenthilnathan/Qwiet-preZero@v0.0.1
+    #   with:
+    #     shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+    #     verbose: false
+    #     strict: true
+    #     wait: false
+    #     importGitHub: false
 
     - name: Check OS and Install Relevant Qwiet Binary
       shell: bash
@@ -44,6 +44,9 @@ jobs:
       #if: github.event_name == 'pull_request'
       run: |
           sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}-${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
+          echo "*********************"
+          cat checkanalysis-report.md
+          echo "*********************"
           python3 ghComment.py --github_org "${GITHUB_REPOSITORY_OWNER}" --github_repo "${GITHUB_REPOSITORY#*/}" --github_pat ${GH_API_TOKEN} --github_pr_number 16 --filename  checkanalysis-report.md
       
       env:
