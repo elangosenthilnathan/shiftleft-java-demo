@@ -66,6 +66,9 @@ def update_github_comment(org, repo, comment_id, pat, body_content):
     payload = {"body": body_content}
 
     print(f"Attempting to PATCH comment ID {comment_id} at: {url}")
+    print("******************************")
+    print(payload)
+    print("******************************")
     try:
         response = requests.patch(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
@@ -102,6 +105,9 @@ def create_github_comment(org, repo, pr_number, pat, body_content):
     payload = {"body": body_content}
 
     print(f"Attempting to POST new comment to PR #{pr_number} at: {url}")
+    print("##############################")
+    print(payload)
+    print("##############################")
     try:
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
