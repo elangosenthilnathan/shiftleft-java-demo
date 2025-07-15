@@ -25,7 +25,7 @@ jobs:
     #     wait: false
     #     importGitHub: false
 
-    - name: Check OS and Install Relevant Qwiet Binary
+    - name: Check OS and Install Relevant Qwiet Client
       shell: bash
       run: |
         if [[ "${{ runner.os }}" == "Linux" ]]; then
