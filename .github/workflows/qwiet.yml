@@ -3,54 +3,61 @@ name: qwiet.ai
 on:
   pull_request:
   workflow_dispatch:
+  push:
 
-
+permissions:
+  actions: read
+  contents: read
+  security-events: write
 
 jobs:
   NextGen-Static-Analysis:
     runs-on: ubuntu-latest
-    #container: shiftleft/core:latest
-    
     steps:
-      - uses: actions/checkout@v4
-        
-      - name: preZero Static Analysis1
-        run: |
-          curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl 
-          ${GITHUB_WORKSPACE}/sl analyze --verbose --wait --app "${GITHUB_REPOSITORY#*/}" .
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+    - uses: actions/checkout@v4
 
-      - name: Publish PR Comment
-        if: github.event_name == 'pull_request'
-        run: |
-            ${GITHUB_WORKSPACE}/sl check-analysis --v2 --app "${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
-            REPORT_OUTPUT=$(cat checkanalysis-report.md)
-            REPORT_BODY=$(jq -n --arg body "$REPORT_OUTPUT" '{body: $body}')        
-            url="https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/${{github.event.number}}/comments"
-  
-            curl -s -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${GH_API_TOKEN}" \
-              -d "${REPORT_BODY}" \
-              "${url}"           
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+    - name: Qwiet-AllInOne-Scan
+      uses: elangosenthilnathan/Qwiet-preZero@v0.0.1
+      with:
+        shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+        verbose: false
+        strict: true
+        wait: false
+        importGitHub: true
+
+    - name: Check OS and Install Relevant Qwiet Binary
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
+          sudo mv $HOME/sl /usr/local/bin/
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          Invoke-WebRequest -Uri 'https://cdn.shiftleft.io/download/sl-latest-windows-x64.zip' -UseBasicParsing -OutFile sl-latest-windows-x64.zip
+          Expand-Archive -Path sl-latest-windows-x64.zip -DestinationPath .
+          $env:Path = $env:Path + ";.\sl" +  ";." 
+        else
+          echo "Unsupported OS: ${{ runner.os }}"
+          exit 1
+        fi 
+
+    - name: Publish PR Comment
+      if: github.event_name == 'pull_request'
+      run: |
+          sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}-${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
+          REPORT_OUTPUT=$(cat checkanalysis-report.md)
+          REPORT_BODY=$(jq -n --arg body "$REPORT_OUTPUT" '{body: $body}')  
+          echo "$REPORT_BODY" >> ghcomment.json
+
+          python3 createGHComment.py --github_org "${GITHUB_REPOSITORY_OWNER}" --github_repo "${GITHUB_REPOSITORY#*/}" --github_pat ${GH_API_TOKEN} --github_pr_number 9 --filename  ghcomment.json
+          url="https://api.github.com/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/${{github.event.number}}/comments"
+
+          # curl -s -X POST \
+          #   -H "Accept: application/vnd.github+json" \
+          #   -H "Authorization: Bearer ${GH_API_TOKEN}" \
+          #   -d "${REPORT_BODY}" \
+          #   "${url}"           
+      env:
+        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+        GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
           
-      # - name: preZero Static Analysis
-      #   run: |
-      #     # Invoke-WebRequest -Uri https://cdn.shiftleft.io/download/sl-latest-windows-x64.zip -UseBasicParsing -OutFile sl-latest-windows-x64.zip
-      #     # Expand-Archive -Path sl-latest-windows-x64.zip -DestinationPath .
-      #     # echo ${GITHUB_REPOSITORY#*/}
-      #     # echo "============="
-      #     # echo ${{ github.event.repository.name }}
-      #     # echo "=========="
-      #     echo "${{ github.repository }}"
-      #     # echo "============="
-      #     # echo "${{ env.REPO_NAME }}"
-      #     # echo "============="
-      #     # echo "$GITHUB_REPOSITORY_OWNER"
-      #     .\sl.exe analyze --verbose --app testingexcludeonwindows . -- --exclude "BZ1152513,keys"
-      #   env:
-      #     SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+
