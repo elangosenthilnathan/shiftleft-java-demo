@@ -66,6 +66,7 @@ def update_github_comment(org, repo, comment_id, pat, body_content):
     payload = {"body": body_content}
 
     print(f"Attempting to PATCH comment ID {comment_id} at: {url}")
+    print(f"Payload: {payload}")
     try:
         response = requests.patch(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
