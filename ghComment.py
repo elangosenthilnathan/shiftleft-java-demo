@@ -6,6 +6,7 @@ import os
 def get_github_comments(org, repo, pr_number, pat):
     """
     Fetches comments for a given GitHub Pull Request.
+    Uses 'application/vnd.github+json' which returns the raw markdown body.
 
     Args:
         org (str): The GitHub organization name.
@@ -18,10 +19,9 @@ def get_github_comments(org, repo, pr_number, pat):
     """
     url = f"https://api.github.com/repos/{org}/{repo}/issues/{pr_number}/comments"
     headers = {
-        "Accept": "application/vnd.github+json",
+        "Accept": "application/vnd.github+json", # This media type returns the raw markdown body
         "X-GitHub-Api-Version": "2022-11-28",
         "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json" # Though not strictly needed for GET, good practice
     }
 
     print(f"Attempting to GET comments from: {url}")
@@ -44,14 +44,14 @@ def get_github_comments(org, repo, pr_number, pat):
 
 def update_github_comment(org, repo, comment_id, pat, body_content):
     """
-    Updates an existing GitHub comment.
+    Updates an existing GitHub comment. The body_content should be in Markdown format.
 
     Args:
         org (str): The GitHub organization name.
         repo (str): The GitHub repository name.
         comment_id (int): The ID of the comment to update.
         pat (str): Your GitHub Personal Access Token.
-        body_content (str): The new content for the comment body.
+        body_content (str): The new content for the comment body (in Markdown).
 
     Returns:
         bool: True if the update was successful, False otherwise.
@@ -61,12 +61,11 @@ def update_github_comment(org, repo, comment_id, pat, body_content):
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
         "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json" # Essential for sending JSON payload
     }
     payload = {"body": body_content}
 
     print(f"Attempting to PATCH comment ID {comment_id} at: {url}")
-    print(f"Payload: {payload}")
     try:
         response = requests.patch(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
@@ -81,14 +80,14 @@ def update_github_comment(org, repo, comment_id, pat, body_content):
 
 def create_github_comment(org, repo, pr_number, pat, body_content):
     """
-    Creates a new comment on a GitHub Pull Request.
+    Creates a new comment on a GitHub Pull Request. The body_content should be in Markdown format.
 
     Args:
         org (str): The GitHub organization name.
         repo (str): The GitHub repository name.
         pr_number (int): The Pull Request number.
         pat (str): Your GitHub Personal Access Token.
-        body_content (str): The content for the new comment body.
+        body_content (str): The content for the new comment body (in Markdown).
 
     Returns:
         bool: True if the creation was successful, False otherwise.
@@ -98,7 +97,7 @@ def create_github_comment(org, repo, pr_number, pat, body_content):
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
         "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json" # Essential for sending JSON payload
     }
     payload = {"body": body_content}
 
@@ -121,7 +120,7 @@ def main():
     parser.add_argument("--github_repo", required=True, help="GitHub repository name.")
     parser.add_argument("--github_pat", required=True, help="GitHub Personal Access Token.")
     parser.add_argument("--github_pr_number", type=int, required=True, help="GitHub Pull Request number.")
-    parser.add_argument("--filename", required=True, help="Path to the file containing the comment body content.")
+    parser.add_argument("--filename", required=True, help="Path to the file containing the comment body content (Markdown format).")
 
     args = parser.parse_args()
 
@@ -149,6 +148,7 @@ def main():
 
     # 3. Look for "Checking analysis of application" in element "body"
     for comment in comments:
+        # The 'body' element contains the raw markdown, as per 'application/vnd.github+json'
         if search_string in comment.get("body", ""):
             found_comment_id = comment.get("id")
             print(f"Found existing comment with '{search_string}'. Comment ID: {found_comment_id}")
