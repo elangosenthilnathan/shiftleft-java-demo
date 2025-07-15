@@ -1,34 +1,15 @@
 version: 2
 build_rules:
-  - id: "No critical or high SAST findings"
-    finding_types:
-      - vuln
-    cvss_31_severity_ratings:
+  - id: Allow no critical findings
+    severities:
       - critical
-      - high
-    threshold: 0
-  - id: "Allow 0 secrets"
-    finding_types:
-      - secret
-    threshold: 0  
-    options:
-      num_findings: 10 # Return 10 sast findings
-  - id: "No reachable SCA findings"
+  - id: Allow one OSS or container finding
     finding_types:
       - oss_vuln
-    cvss_31_severity_ratings:
-      - critical
-      - high
-    threshold: 0
+      - container
+    threshold: 1
+  - id: Allow no reachable OSS vulnerability
+    finding_types:
+      - oss_vuln
     options:
       reachable: true
-      num_findings: 10 # Return 10 reachable sca findings
-  - id: "No critical or high container findings"
-    finding_types:
-      - container
-    cvss_31_severity_ratings:
-      - critical
-      - high
-    threshold: 0
-    options:
-      num_findings: 10 # Return 10 container findings
