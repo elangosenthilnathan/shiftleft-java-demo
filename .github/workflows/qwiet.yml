@@ -50,7 +50,7 @@ jobs:
             -H "Authorization: token YOUR_GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.raw+json" \
             -d "$(jq -Rs '{"body": .}' checkanalysis-report.md)" \
-            url
+            ${url}
           #python3 ghComment.py --github_org "${GITHUB_REPOSITORY_OWNER}" --github_repo "${GITHUB_REPOSITORY#*/}" --github_pat ${GH_API_TOKEN} --github_pr_number 16 --filename  checkanalysis-report.md
       
       env:
