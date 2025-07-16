@@ -45,6 +45,32 @@ jobs:
       run: |
           sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}-${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
           COMMENT_ID=2758540197
+          PR_NUMBER=16
+
+          url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/${PR_NUMBER}/comments"
+          curl -X GET \
+            -H "Authorization: token ${GH_API_TOKEN}" \
+            -H "Accept: application/vnd.github.raw+json" \
+            ${url} -o response.json
+
+          jq -r '.[] | @base64' response.json | while read -r row; do
+            # Decode the base64 string back to JSON
+            decoded_row=$(echo "${row}" | base64 --decode)
+          
+            # Extract values using jq
+            commentID=$(echo "${decoded_row}" | jq -r '.id')
+            body=$(echo "${decoded_row}" | jq -r '.body')
+          
+            if echo ${body} | grep -q "Checking analysis of application"; then
+                echo "String found in description."
+                echo "Comment ID is $commentID"
+                exit
+            else
+                echo "No match found"
+            fi
+          done
+          
+          #echo "issue_title=$(jq -r '.[0].title' data.json)" >> $GITHUB_OUTPUT
 
           url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${COMMENT_ID}"
           curl -X PATCH \
