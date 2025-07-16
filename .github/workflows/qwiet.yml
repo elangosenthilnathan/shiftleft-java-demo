@@ -47,7 +47,7 @@ jobs:
           cat checkanalysis-report.md
           url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/16/comments"
           curl -X POST \
-            -H "Authorization: token YOUR_GITHUB_TOKEN" \
+            -H "Authorization: token ${GH_API_TOKEN}" \
             -H "Accept: application/vnd.github.raw+json" \
             -d "$(jq -Rs '{"body": .}' checkanalysis-report.md)" \
             ${url}
