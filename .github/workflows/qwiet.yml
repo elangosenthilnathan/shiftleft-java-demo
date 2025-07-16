@@ -63,14 +63,14 @@ jobs:
             body=$(echo "${decoded_row}" | jq -r '.body')
           
             if echo ${body} | grep -q "Checking analysis of application"; then
-                updateCommentID=$commentID
+                updateCommentID="$commentID"
                 echo "Comment ID is $commentID"
                 exit
             fi
           done
           
           #echo "issue_title=$(jq -r '.[0].title' data.json)" >> $GITHUB_OUTPUT
-          echo "Comment ID is $updateCommentID"
+          echo "Update Comment ID is $updateCommentID"
 
           url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${updateCommentID}"
           curl -X PATCH \
