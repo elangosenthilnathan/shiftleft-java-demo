@@ -44,13 +44,21 @@ jobs:
       #if: github.event_name == 'pull_request'
       run: |
           sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}-${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
-          cat checkanalysis-report.md
-          url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/16/comments"
-          curl -X POST \
+          COMMENT_ID=2758540197
+
+          url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${COMMENT_ID}"
+          curl -X PATCH \
             -H "Authorization: token ${GH_API_TOKEN}" \
             -H "Accept: application/vnd.github.raw+json" \
             -d "$(jq -Rs '{"body": .}' checkanalysis-report.md)" \
             ${url}
+            
+          # url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/16/comments"
+          # curl -X POST \
+          #   -H "Authorization: token ${GH_API_TOKEN}" \
+          #   -H "Accept: application/vnd.github.raw+json" \
+          #   -d "$(jq -Rs '{"body": .}' checkanalysis-report.md)" \
+          #   ${url}
           #python3 ghComment.py --github_org "${GITHUB_REPOSITORY_OWNER}" --github_repo "${GITHUB_REPOSITORY#*/}" --github_pat ${GH_API_TOKEN} --github_pr_number 16 --filename  checkanalysis-report.md
       
       env:
