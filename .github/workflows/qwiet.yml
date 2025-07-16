@@ -63,12 +63,9 @@ jobs:
             body=$(echo "${decoded_row}" | jq -r '.body')
           
             if echo ${body} | grep -q "Checking analysis of application"; then
-                updateCommentID=commentID
+                updateCommentID=$commentID
                 echo "Comment ID is $commentID"
                 exit
-            else
-                echo "No match found"
-            fi
           done
           
           #echo "issue_title=$(jq -r '.[0].title' data.json)" >> $GITHUB_OUTPUT
