@@ -70,6 +70,9 @@ jobs:
           done < <(jq -r '.[] | @base64' response.json)
           
           if [ "$my_variable" -eq 0 ]; then
+            echo "###############################"
+            echo "Posting a new comment"
+            echo "###############################"
             url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/${PR_NUMBER}/comments"
             curl -X POST \
               -H "Authorization: token ${GH_API_TOKEN}" \
@@ -77,6 +80,9 @@ jobs:
               -d "$(jq -Rs '{"body": .}' checkanalysis-report.md)" \
               ${url}
           else
+            echo "###############################"
+            echo "Patching an existing comment"
+            echo "###############################"          
             url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${updateCommentID}"
             curl -X PATCH \
               -H "Authorization: token ${GH_API_TOKEN}" \
