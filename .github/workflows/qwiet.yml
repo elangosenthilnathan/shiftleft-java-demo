@@ -54,23 +54,22 @@ jobs:
             ${url} -o response.json
 
           updateCommentID=0
-          jq -r '.[] | @base64' response.json | while read -r row; do
-            # Decode the base64 string back to JSON
-            decoded_row=$(echo "${row}" | base64 --decode)
+          while read -r row; do
+              # Decode the base64 string back to JSON
+              decoded_row=$(echo "${row}" | base64 --decode)
           
-            # Extract values using jq
-            commentID=$(echo "${decoded_row}" | jq -r '.id')
-            body=$(echo "${decoded_row}" | jq -r '.body')
+              # Extract values using jq
+              commentID=$(echo "${decoded_row}" | jq -r '.id')
+              body=$(echo "${decoded_row}" | jq -r '.body')
           
-            if echo ${body} | grep -q "Checking analysis of application"; then
-                #updateCommentID="$commentID"
-                updateCommentID=16
-                echo "Comment ID is $commentID"
-                exit
-            fi
-          done
+              if echo "${body}" | grep -q "Checking analysis of application"; then
+                  updateCommentID="$commentID" 
+                  echo "Comment ID is $commentID"
+                  break 
+              fi
+          done < <(jq -r '.[] | @base64' response.json)
           
-          echo "Update Comment ID is $updateCommentID"
+          echo "Outside loop, updateCommentID is: $updateCommentID"
 
           url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${updateCommentID}"
           curl -X PATCH \
