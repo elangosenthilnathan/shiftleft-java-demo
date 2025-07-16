@@ -45,7 +45,7 @@ jobs:
       run: |
           sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}-${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
           COMMENT_ID=2758540197
-          PR_NUMBER=16
+          PR_NUMBER=15
 
           url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/${PR_NUMBER}/comments"
           curl -X GET \
