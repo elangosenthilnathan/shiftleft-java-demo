@@ -66,6 +66,7 @@ jobs:
                 updateCommentID=$commentID
                 echo "Comment ID is $commentID"
                 exit
+            fi
           done
           
           #echo "issue_title=$(jq -r '.[0].title' data.json)" >> $GITHUB_OUTPUT
