@@ -44,8 +44,8 @@ jobs:
       #if: github.event_name == 'pull_request'
       run: |
           sl check-analysis --v2 --app "${GITHUB_REPOSITORY_OWNER}-${GITHUB_REPOSITORY#*/}" --no-build-rules --report-file checkanalysis-report.md
-          COMMENT_ID=2758540197
           PR_NUMBER=15
+          UPDATE_COMMENT_ID=0          
 
           url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/${PR_NUMBER}/comments"
           curl -X GET \
@@ -53,7 +53,7 @@ jobs:
             -H "Accept: application/vnd.github.raw+json" \
             ${url} -o response.json
 
-          updateCommentID=0
+
           while read -r row; do
               # Decode the base64 string back to JSON
               decoded_row=$(echo "${row}" | base64 --decode)
@@ -63,13 +63,12 @@ jobs:
               body=$(echo "${decoded_row}" | jq -r '.body')
           
               if echo "${body}" | grep -q "Checking analysis of application"; then
-                  updateCommentID="$commentID" 
-                  echo "Comment ID is $commentID"
+                  UPDATE_COMMENT_ID="$commentID" 
                   break 
               fi
           done < <(jq -r '.[] | @base64' response.json)
           
-          if [ "$my_variable" -eq 0 ]; then
+          if [ "$UPDATE_COMMENT_ID" -eq 0 ]; then
             echo "###############################"
             echo "Posting a new comment"
             echo "###############################"
@@ -83,7 +82,7 @@ jobs:
             echo "###############################"
             echo "Patching an existing comment"
             echo "###############################"          
-            url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${updateCommentID}"
+            url="https://api.github.com/repos/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY#*/}/issues/comments/${UPDATE_COMMENT_ID}"
             curl -X PATCH \
               -H "Authorization: token ${GH_API_TOKEN}" \
               -H "Accept: application/vnd.github.raw+json" \
