@@ -1,0 +1,21 @@
+---
+# This workflow integrates qwiet.ai preZero with GitHub
+# Visit https://docs.shiftleft.io for help
+name: qwiet.ai
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  NextGen-Static-Analysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: test
+      run: |
+        git config --global url."https://${GHEC_TOKEN}@github.com".insteadOf "https://github.com"
+        git config --global --list
+      env:
+        GHEC_TOKEN: ${{ secrets.GHEC_TOKEN }}
