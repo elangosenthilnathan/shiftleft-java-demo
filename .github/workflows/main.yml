@@ -16,7 +16,7 @@ jobs:
 
     - name: test
       run: |
-        git config --global url."https://${GHEC_TOKEN}@github.com".insteadOf "https://github.com"
+        git config --global url."https://$GHEC_TOKEN@github.com".insteadOf "https://github.com"
         git config --global --list
       env:
         GHEC_TOKEN: ${{ secrets.GHEC_TOKEN }}
