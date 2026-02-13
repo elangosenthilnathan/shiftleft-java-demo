@@ -6,6 +6,7 @@ name: qwiet.ai
 on:
   pull_request:
   workflow_dispatch:
+  push:
 
 jobs:
   NextGen-Static-Analysis:
