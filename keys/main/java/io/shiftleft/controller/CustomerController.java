@@ -216,7 +216,7 @@ public class CustomerController {
    * @param request
    * @throws Exception
    */
-  @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
+@RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
   public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
     // "Settings" will be stored in a cookie
     // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
@@ -246,65 +246,94 @@ public class CustomerController {
 
     // Now we can store on filesystem
     String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
-	// storage will have ClassPathResource as basepath
-    ClassPathResource cpr = new ClassPathResource("./static/");
-	  File file = new File(cpr.getPath()+settings[0]);
-    if(!file.exists()) {
-      file.getParentFile().mkdirs();
+    
+    // SECURE: Validate filename - whitelist approach to prevent directory traversal
+    String filename = settings[0];
+    if (!isValidFilename(filename)) {
+      httpResponse.getOutputStream().println("Invalid filename");
+      throw new SecurityException("Invalid filename characters detected");
+    }
+    
+    // SECURE: Validate filename length to prevent buffer overflow
+    if (filename.length() > 255) {
+      httpResponse.getOutputStream().println("Filename too long");
+      throw new SecurityException("Filename exceeds maximum allowed length");
+    }
+    
+    // SECURE: Detect null byte injection attacks
+    if (filename.contains("\0") || filename.contains("%00")) {
+      httpResponse.getOutputStream().println("Invalid characters in filename");
+      throw new SecurityException("Null byte injection detected");
+    }
+    
+    // SECURE: Explicit path traversal sequence detection
+    String normalizedFilename = filename.replace("\\", "/");
+    if (normalizedFilename.contains("../") || normalizedFilename.contains("/..") || 
+        normalizedFilename.startsWith("..") || normalizedFilename.contains("/../")) {
+      httpResponse.getOutputStream().println("Path traversal detected");
+      throw new SecurityException("Path traversal sequence detected in filename");
+    }
+    
+    // SECURE: Check for multiple extensions to prevent double extension attacks
+    long dotCount = filename.chars().filter(ch -> ch == '.').count();
+    if (dotCount > 1) {
+      httpResponse.getOutputStream().println("Multiple extensions not allowed");
+      throw new SecurityException("Filename contains multiple extensions");
+    }
+    
+    // SECURE: Restrict file extensions to prevent execution of malicious code
+    if (!hasAllowedExtension(filename)) {
+      httpResponse.getOutputStream().println("File extension not allowed");
+      throw new SecurityException("File extension not allowed");
+/**
+   * SECURE: Restricts file extensions to prevent execution of malicious code
+   * Only allows specific safe file extensions
+   */
+  private boolean hasAllowedExtension(String filename) {
+    List<String> allowedExtensions = Arrays.asList(".txt", ".conf", ".properties", ".json", ".xml");
+    if (filename == null || !filename.contains(".")) {
+      return false;
+    }
+    // SECURE: Use Locale.ROOT for consistent case conversion across systems
+    String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase(Locale.ROOT);
+    return allowedExtensions.contains(extension);
+  }
+
+
+    // SECURE: Verify the resolved path is within the allowed directory using Path API
+    if (!requestedPath.startsWith(basePath)) {
+      httpResponse.getOutputStream().println("Invalid file path");
+      throw new SecurityException("Directory traversal attempt detected");
+    }
+    
+    File file = requestedPath.toFile();
+    
+    // SECURE: Additional absolute path comparison to prevent bypasses
+    Path normalizedBase = basePath.normalize().toAbsolutePath();
+    Path normalizedFile = file.toPath().normalize().toAbsolutePath();
+    
+    if (!normalizedFile.startsWith(normalizedBase)) {
+      httpResponse.getOutputStream().println("Invalid file path");
+      throw new SecurityException("Directory traversal attempt detected");
+    }
+    
+    // SECURE: Check parent directory exists, but don't create arbitrary directories
+    if(!file.getParentFile().exists() || !file.getParentFile().equals(basePath.toFile())) {
+      httpResponse.getOutputStream().println("Invalid directory structure");
+      throw new SecurityException("Cannot create files outside base directory");
     }
 
-    FileOutputStream fos = new FileOutputStream(file, true);
     // First entry is the filename -> remove it
     String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
-    // on setting at a linez
-    fos.write(String.join("\n",settingsArr).getBytes());
-    fos.write(("\n"+cookie[cookie.length-1]).getBytes());
-    fos.close();
+    String content = String.join("\n", settingsArr) + "\n" + cookie[cookie.length-1];
+    
+    // SECURE: Use Files.write() with proper options instead of FileOutputStream
+    Files.write(file.toPath(), content.getBytes(), 
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    
     httpResponse.getOutputStream().println("Settings Saved");
   }
 
-  /**
-   * Debug test for saving and reading a customer
-   *
-   * @param firstName String
-   * @param lastName String
-   * @param dateOfBirth String
-   * @param ssn String
-   * @param tin String
-   * @param phoneNumber String
-   * @param httpResponse
-   * @param request
-   * @return String
-   * @throws IOException
-   */
-  @RequestMapping(value = "/debug", method = RequestMethod.GET)
-  public String debug(@RequestParam String customerId,
-					  @RequestParam int clientId,
-					  @RequestParam String firstName,
-                      @RequestParam String lastName,
-                      @RequestParam String dateOfBirth,
-                      @RequestParam String ssn,
-					  @RequestParam String socialSecurityNum,
-                      @RequestParam String tin,
-                      @RequestParam String phoneNumber,
-                      HttpServletResponse httpResponse,
-                     WebRequest request) throws IOException{
-
-    // empty for now, because we debug
-    Set<Account> accounts1 = new HashSet<Account>();
-    //dateofbirth example -> "1982-01-10"
-    Customer customer1 = new Customer(customerId, clientId, firstName, lastName, DateTime.parse(dateOfBirth).toDate(),
-                                      ssn, socialSecurityNum, tin, phoneNumber, new Address("Debug str",
-                                      "", "Debug city", "CA", "12345"),
-                                      accounts1);
-
-    customerRepository.save(customer1);
-    httpResponse.setStatus(HttpStatus.CREATED.value());
-    httpResponse.setHeader("Location", String.format("%s/customers/%s",
-                           request.getContextPath(), customer1.getId()));
-
-    return customer1.toString().toLowerCase().replace("script","");
-  }
 
 	/**
 	 * Debug test for saving and reading a customer
